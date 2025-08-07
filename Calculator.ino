@@ -4,12 +4,13 @@
 
 LiquidCrystal_I2C lcd(0x3F, 16, 2); // set the LCD address to 0x3F for a 16 chars and 2 line display
 
-String pad;
+String expression;
 const byte numRows = 4;
 const byte numCols = 4;
 const int MAX_SIZE = 10;
 int stack[MAX_SIZE];
 int top = -1;
+static bool answerClear = false; //If an answer is displayed, clear it when next button is pressed
 
 char keymap[numRows][numCols] =
 {
@@ -35,26 +36,29 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   readKeypad();
-  lcd.setCursor(0, 0);
-  lcd.print(pad);
+  lcd.setCursor(0, 1);
+  lcd.print(expression);
   delay(100);
 }
 
 void readKeypad() {
   char keypressed = myKeypad.getKey(); 
+
   String val = String(keypressed);
-  pad += val;
-  if (keypressed == '*'){
-    pad = "";
+  expression += val;
+  if (keypressed == '*'){ //button for clearing
     lcd.clear();
     lcd.print("Clear");
     delay(1000);
-    pad = "";
+    expression = "";
     lcd.clear();
   }
-  if (keypressed == '='){
+
+  if (keypressed == '='){ //evaluates when '=' is pressed
     lcd.clear();
-    pad = eval(pad);
+    lcd.setCursor(0, 0);  //moves expression up
+    lcd.print(expression);
+    expression = eval(expression);
   }
 }
 
@@ -102,5 +106,6 @@ int eval(String expression) {
         break;
     }
   }
+  answerClear = true;
   return result;
 }
